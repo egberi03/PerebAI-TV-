@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PerebAI TV</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#0b1020;color:#eef2ff}
+header{padding:18px 5%;display:flex;justify-content:space-between;align-items:center;background:#111936;position:sticky;top:0;z-index:5}
+.logo{font-size:24px;font-weight:800;color:#7dd3fc}.logo span{color:#c084fc}
+nav a{color:#dbeafe;text-decoration:none;margin-left:18px;cursor:pointer}
+.hero{padding:55px 5%;background:linear-gradient(135deg,#111936,#21153d)}
+.hero h1{font-size:clamp(38px,7vw,72px);margin:0 0 12px}.hero p{max-width:650px;color:#cbd5e1;font-size:18px}
+.container{width:90%;max-width:1200px;margin:30px auto}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.card,.panel{background:#121a35;border:1px solid #26345f;border-radius:16px;padding:18px}.card video{width:100%;border-radius:12px;background:#000;max-height:230px}
+.card h3{margin-bottom:7px}.muted{color:#94a3b8;font-size:14px}
+button{background:#7c3aed;color:white;border:0;padding:12px 18px;border-radius:10px;cursor:pointer;font-weight:700}
+button.secondary{background:#243154}.danger{background:#dc2626}
+input,textarea{width:100%;padding:12px;margin:7px 0 14px;background:#0b1229;border:1px solid #33446f;border-radius:9px;color:white}
+section{display:none}.active{display:block}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;margin:20px 0}.stat{padding:20px;border-radius:14px;background:#182345}.stat b{font-size:28px;display:block;color:#7dd3fc}
+footer{text-align:center;padding:35px;color:#64748b}
+#status{margin-top:10px;color:#a7f3d0}
+</style>
+</head>
+<body>
+<header>
+<div class="logo">Pereb<span>AI</span> TV</div>
+<nav>
+<a onclick="show('home')">Home</a><a onclick="show('upload')">Upload</a><a onclick="show('dashboard')">Dashboard</a>
+</nav>
+</header>
+
+<section id="home" class="active">
+<div class="hero"><h1>Watch. Create. Earn.</h1><p>PerebAI TV is an AI-video platform where creators publish videos, build audiences and earn from qualified views.</p><button onclick="show('upload')">Upload AI Video</button></div>
+<div class="container"><h2>Latest AI Videos</h2><div id="feed" class="grid"></div></div>
+</section>
+
+<section id="upload">
+<div class="container">
+<div class="panel"><h2>Upload an AI Video</h2>
+<form id="uploadForm">
+<input id="title" placeholder="Video title" required>
+<textarea id="description" placeholder="Description"></textarea>
+<input id="creator" placeholder="Creator name" required>
+<input id="video" type="file" accept="video/*" required>
+<button>Publish Video</button><div id="status"></div>
+</form></div></div>
+</section>
+
+<section id="dashboard">
+<div class="container"><h2>Creator Dashboard</h2>
+<div class="stats">
+<div class="stat"><span>Total Views</span><b id="views">0</b></div>
+<div class="stat"><span>Videos</span><b id="videos">0</b></div>
+<div class="stat"><span>Estimated Earnings</span><b id="earnings">₦0.00</b></div>
+</div>
+<div class="panel"><h3>Monetization</h3><p class="muted">MVP rate: ₦0.50 per qualified view. Production systems should add fraud detection, view qualification and payout verification.</p></div>
+</div>
+</section>
+<footer>PerebAI TV © 2026 — AI Video Creator Platform</footer>
+
+<script>
+const API = "http://localhost:3000/api";
+
+function show(id){
+ document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ if(id==="home") loadFeed();
+ if(id==="dashboard") loadDashboard();
+}
+async function loadFeed(){
+ const box=document.getElementById("feed");
+ try{
+  const r=await fetch(API+"/videos"); const data=await r.json();
+  box.innerHTML=data.map(v=>`
+   <div class="card">
+    <video controls preload="metadata" src="${API}${v.videoUrl}" onclick="countView('${v.id}')"></video>
+    <h3>${esc(v.title)}</h3><p class="muted">${esc(v.description||"")}</p>
+    <p class="muted">By ${esc(v.creator)} · ${v.views} views</p>
+   </div>`).join("") || "<p>No videos yet. Upload the first one.</p>";
+ }catch(e){box.innerHTML="<p>Backend not connected. Start the Node.js server first.</p>"}
+}
+async function countView(id){try{await fetch(API+"/videos/"+id+"/view",{method:"POST"});loadFeed()}catch(e){}}
+async function loadDashboard(){
+ try{const r=await fetch(API+"/dashboard");const d=await r.json();
+ document.getElementById("views").textContent=d.totalViews;
+ document.getElementById("videos").textContent=d.totalVideos;
+ document.getElementById("earnings").textContent="₦"+Number(d.earnings).toFixed(2);
+ }catch(e){}
+}
+document.getElementById("uploadForm").addEventListener("submit",async e=>{
+ e.preventDefault(); const s=document.getElementById("status"); s.textContent="Uploading...";
+ const fd=new FormData(); fd.append("title",title.value);fd.append("description",description.value);fd.append("creator",creator.value);fd.append("video",video.files[0]);
+ try{const r=await fetch(API+"/videos/upload",{method:"POST",body:fd});const d=await r.json();
+ if(!r.ok)throw new Error(d.error||"Upload failed");s.textContent="Published successfully.";e.target.reset();loadFeed();
+ }catch(err){s.textContent=err.message}
+});
+function esc(x){return String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+loadFeed();
+</script>
+</body>
+</html>
