@@ -61,7 +61,7 @@ footer{text-align:center;padding:35px;color:#64748b}
 <footer>PerebAI TV © 2026 — AI Video Creator Platform</footer>
 
 <script>
-const API="https://pereb-ai-tv-backend.onrender.com";
+const ideoseoseos="https://pereb-ai-tv-backend.onrender.com";
 function show(id){
  document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
  document.getElementById(id).classList.add("active");
@@ -71,7 +71,7 @@ function show(id){
 async function loadFeed(){
  const box=document.getElementById("feed");
  try{
-  const r=await fetch(API+"/videos"); const data=await r.json();
+  const r=await fetch(API+"/api/videos"); const data=await r.json();
   box.innerHTML=data.map(v=>`
    <div class="card">
     <video controls preload="metadata" src="${API}${v.videoUrl}" onclick="countView('${v.id}')"></video>
@@ -80,9 +80,9 @@ async function loadFeed(){
    </div>`).join("") || "<p>No videos yet. Upload the first one.</p>";
  }catch(e){box.innerHTML="<p>Backend not connected. Start the Node.js server first.</p>"}
 }
-async function countView(id){try{await fetch(API+"/videos/"+id+"/view",{method:"POST"});loadFeed()}catch(e){}}
+async function countView(id){try{await fetch(API+"/api/videos/"+id+"/view",{method:"POST"});loadFeed()}catch(e){}}
 async function loadDashboard(){
- try{const r=await fetch(API+"/dashboard");const d=await r.json();
+ try{const r=await fetch(API+"/api/dashboard");const d=await r.json();
  document.getElementById("views").textContent=d.totalViews;
  document.getElementById("videos").textContent=d.totalVideos;
  document.getElementById("earnings").textContent="₦"+Number(d.earnings).toFixed(2);
@@ -91,11 +91,9 @@ async function loadDashboard(){
 document.getElementById("uploadForm").addEventListener("submit",async e=>{
  e.preventDefault(); const s=document.getElementById("status"); s.textContent="Uploading...";
  const fd=new FormData(); fd.append("title",title.value);fd.append("description",description.value);fd.append("creator",creator.value);fd.append("video",video.files[0]);
- try{const r=await fetch(API+"/videos/upload",{method:"POST",body:fd});const d=await r.json();
+ try{const r=await fetch(API+"/api/videos/upload",{method:"POST",body:fd});const d=await r.json();
  if(!r.ok)throw new Error(d.error||"Upload failed");s.textContent="Published successfully.";e.target.reset();loadFeed();
- }catch(err){s.textContent=err.message}
-});
-function esc(x){return String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+ }catch(err){s.textContent=err.messafunctionfunction esc(x){return String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 loadFeed();
 </script>
 </body>
