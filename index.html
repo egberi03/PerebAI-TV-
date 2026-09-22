@@ -61,8 +61,7 @@ footer{text-align:center;padding:35px;color:#64748b}
 <footer>PerebAI TV © 2026 — PEREB DIGITAL SERVICE CONCEPT</footer>
 
 <script>
-const API="https://pereb-ai-tv-backend.onrender.com/api";
- const BACKEND = "https://pereb-ai-tv-backend.onrender.com";
+
 
 function show(id){
  document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
@@ -70,6 +69,8 @@ function show(id){
  if(id==="home") loadFeed();
  if(id==="dashboard") loadDashboard();
 }
+ const API="https://pereb-ai-tv-backend.onrender.com/api";
+ const BACKEND = "https://pereb-ai-tv-backend.onrender.com";
 async function loadFeed(){
  const box=document.getElementById("feed");
  try{
